@@ -32,6 +32,23 @@ bash install-from-github.sh --repo https://github.com/yonovice/V2bX.git \
   --branch dev_new --install-dir /opt/v2bx --service-name v2bx
 ```
 
+## 免 Git 安装（从 Releases 下载）
+
+如果你的服务器没有安装 git，或希望更简洁的安装方式，可直接通过 Releases 安装（自动识别系统与架构、安装到系统路径并创建服务）：
+
+```bash
+wget -O install-from-releases.sh https://raw.githubusercontent.com/yonovice/V2bX/dev_new/scripts/install-from-releases.sh && \
+  sudo bash install-from-releases.sh                 # 安装最新版本（若仓库已发布）
+sudo bash install-from-releases.sh --version v1.2.3  # 安装指定版本
+```
+
+如遇“未找到发布资产”提示，说明当前仓库尚未发布二进制，可改用源码安装脚本：
+
+```bash
+wget -O install-from-github.sh https://raw.githubusercontent.com/yonovice/V2bX/dev_new/scripts/install-from-github.sh && \
+  bash install-from-github.sh --repo https://github.com/yonovice/V2bX.git --branch dev_new
+```
+
 ## 安装脚本（本仓库自带）
 
 `scripts/install.sh` 提供面向生产的安装流程：系统检测、Go 环境处理、构建安装、配置初始化、systemd 服务、可选防火墙、日志轮转与 `add-node` 集成。
