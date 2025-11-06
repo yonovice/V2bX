@@ -1,13 +1,13 @@
 package conf
 
 import (
-	"fmt"
-	"io"
-	"os"
+    "fmt"
+    "io"
+    "os"
 
-	"github.com/InazumaV/V2bX/common/json5"
+    "github.com/InazumaV/V2bX/common/json5"
 
-	"encoding/json/v2"
+    "encoding/json"
 )
 
 type Conf struct {

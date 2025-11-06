@@ -1,17 +1,40 @@
-example/config.yml
-example/main
-example/XrayR
-example/XrayR*
-example/mytest
-example/access.logo
-example/error.log
-api/chooseparser.go.bak
-app/Inboundbuilder/.lego/
-app/legocmd/.lego/
-.vscode/launch.json
-example/.lego
-example/cert
-./vscode
-output/*
-.idea/*
-newV2bX.sh
+# 操作系统与编辑器
+.DS_Store
+.idea/
+.vscode/
+
+# 环境与配置
+.env
+*.env
+
+# Go 构建产物与临时目录
+build/
+dist/
+coverage/
+bin/
+build_assets/
+tmp/
+.cache/
+
+# Go 可执行与动态库（不同平台）
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 日志
+logs/
+*.log
+
+# 证书与密钥（避免泄露敏感信息）
+node/*.key
+node/*.pem
+node/*.crt
+node/cert/
+
+# 下载的工具链与压缩包
+go*.tar.gz
+
+# 其他
+*.bak
+*.tmp
