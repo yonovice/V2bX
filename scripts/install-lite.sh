@@ -33,7 +33,7 @@ detectArch() {
 }
 
 ensureCurl() {
-  if command -v curl >/dev/null 2>&1; then return 0; fi
+  if command -v curl >/dev/null 2>&1; then ok "已检测到 curl"; return 0; fi
   warn "未检测到 curl，尝试自动安装..."
   if command -v apt-get >/dev/null 2>&1; then apt-get update -y >/dev/null 2>&1 || true; apt-get install -y curl >/dev/null 2>&1 || true; fi
   if command -v yum >/dev/null 2>&1; then yum install -y curl >/dev/null 2>&1 || true; fi
@@ -44,7 +44,12 @@ ensureCurl() {
   command -v curl >/dev/null 2>&1 || { err "无法安装 curl，请手动安装后重试"; exit 1; }
 }
 
-apiGet() { curl -sL "$1"; }
+apiGet() {
+  local url="$1"
+  local body
+  body=$(curl -fsSL "$url" 2>/dev/null || true)
+  echo "$body"
+}
 
 resolveUrl() {
   local api
@@ -53,9 +58,18 @@ resolveUrl() {
   else
     api="https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest"
   fi
+  ok "正在获取 Releases 信息：$api"
   body=$(apiGet "$api")
+  if [[ -z "$body" ]]; then
+    warn "无法访问 GitHub API（可能是网络受限或速率限制）。"
+    echo ""; return 0
+  fi
   url=$(echo "$body" | sed -n 's/.*"browser_download_url": "\([^"]*\)".*/\1/p' | grep -i linux | grep -Ei "${arch}|amd64|x86_64|arm64|aarch64" | head -n1 || true)
-  [[ -n "$url" ]] || { err "未找到匹配的发布资产，请确认仓库已发布 Releases 或改用源码安装脚本"; exit 1; }
+  if [[ -z "$url" ]]; then
+    warn "未找到匹配的发布资产（可能尚未发布二进制）。"
+    echo ""; return 0
+  fi
+  ok "匹配到发布资产：$url"
   echo "$url"
 }
 
@@ -110,6 +124,20 @@ SERVICE
   ok "服务已启动，查看：systemctl status v2bx；日志：journalctl -u v2bx -e"
 }
 
+fallbackSourceInstall() {
+  warn "触发回退：改用源码安装脚本（自动安装 git 并从仓库拉取构建）。"
+  local url="https://raw.githubusercontent.com/yonovice/V2bX/dev_new/scripts/install-from-github.sh"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$url" -o /tmp/install-from-github.sh || { err "下载源码安装脚本失败：$url"; exit 1; }
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO /tmp/install-from-github.sh "$url" || { err "下载源码安装脚本失败：$url"; exit 1; }
+  else
+    err "缺少 curl/wget，无法下载源码安装脚本。请手动安装后重试。"; exit 1
+  fi
+  ok "开始执行源码安装脚本..."
+  bash /tmp/install-from-github.sh --repo https://github.com/yonovice/V2bX.git --branch dev_new
+}
+
 parseArgs() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -126,6 +154,10 @@ main() {
   detectArch
   ensureCurl
   url=$(resolveUrl)
+  if [[ -z "$url" ]]; then
+    fallbackSourceInstall
+    return 0
+  fi
   installBinary "$url"
   setupConfig
   setupService
