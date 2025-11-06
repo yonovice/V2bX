@@ -49,6 +49,18 @@ wget -O install-from-github.sh https://raw.githubusercontent.com/yonovice/V2bX/d
   bash install-from-github.sh --repo https://github.com/yonovice/V2bX.git --branch dev_new
 ```
 
+## 极速安装（install-lite.sh，一条命令）
+
+当仓库提供 Releases 二进制时，使用超轻量脚本几秒完成安装：
+
+```bash
+wget -O install-lite.sh https://raw.githubusercontent.com/yonovice/V2bX/dev_new/scripts/install-lite.sh && \
+  sudo bash install-lite.sh               # 最新版本
+sudo bash install-lite.sh --version v1.2.3
+```
+
+特性：自动识别架构（amd64/arm64）、下载对应二进制、创建基础配置与 systemd 服务、失败自动回滚并保留备份。
+
 ## 安装脚本（本仓库自带）
 
 `scripts/install.sh` 提供面向生产的安装流程：系统检测、Go 环境处理、构建安装、配置初始化、systemd 服务、可选防火墙、日志轮转与 `add-node` 集成。
