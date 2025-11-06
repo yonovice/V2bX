@@ -38,9 +38,50 @@ requireRoot() {
   fi
 }
 
+installGit() {
+  # 根据发行版自动安装 git
+  if command -v apt-get >/dev/null 2>&1; then
+    ok "检测到 Debian/Ubuntu 系，自动安装 git";
+    apt-get update -y >/dev/null 2>&1 || true
+    apt-get install -y git >/dev/null 2>&1 || true
+  elif command -v yum >/dev/null 2>&1; then
+    ok "检测到 CentOS/RHEL 系，自动安装 git";
+    yum install -y git >/dev/null 2>&1 || true
+  elif command -v dnf >/dev/null 2>&1; then
+    ok "检测到 Fedora/RHEL 系，自动安装 git";
+    dnf install -y git >/dev/null 2>&1 || true
+  elif command -v apk >/dev/null 2>&1; then
+    ok "检测到 Alpine 系，自动安装 git";
+    apk update >/dev/null 2>&1 || true
+    apk add --no-cache git >/dev/null 2>&1 || true
+  elif command -v pacman >/dev/null 2>&1; then
+    ok "检测到 Arch 系，自动安装 git";
+    pacman -Sy --noconfirm git >/dev/null 2>&1 || true
+  elif command -v zypper >/dev/null 2>&1; then
+    ok "检测到 openSUSE 系，自动安装 git";
+    zypper refresh >/dev/null 2>&1 || true
+    zypper install -y git >/dev/null 2>&1 || true
+  else
+    warn "未识别到常见包管理器，暂不支持自动安装 git。"
+    return 1
+  fi
+  # 再次校验安装结果
+  if command -v git >/dev/null 2>&1; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 ensureGit() {
   if ! command -v git >/dev/null 2>&1; then
-    err "未检测到 git，请先安装 git 后再执行。"; exit 1
+    warn "未检测到 git，正在自动安装（需要网络与包管理器）..."
+    if installGit; then
+      ok "git 安装成功。"
+    else
+      err "自动安装 git 失败，请手动安装后重试。例如：apt-get install -y git 或 yum install -y git"
+      exit 1
+    fi
   fi
 }
 
